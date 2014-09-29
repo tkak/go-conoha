@@ -22,9 +22,6 @@ type Client struct {
 	// Tenant Name
 	TenantName string
 
-	// Tenant ID
-	TenantID string
-
 	// Authentication URL
 	AuthURL string
 
@@ -42,7 +39,7 @@ type DoError struct {
 }
 
 func NewClient(user string, password string, tenantName string, tenantID string) (*Client, error) {
-	// If it exists, grab teh token from the environment
+	// If it exists, grab the token from the environment
 	if user == "" {
 		user = os.Getenv("CONOHA_USER")
 	}
@@ -52,18 +49,13 @@ func NewClient(user string, password string, tenantName string, tenantID string)
 	}
 
 	if tenantName == "" {
-		tenantName = os.Getenv("CONOHA_TENANT_NAME")
-	}
-
-	if tenantID == "" {
-		tenantID = os.Getenv("CONOHA_TENANT_ID")
+		tenantName = os.Getenv("CONOHA_TENANT")
 	}
 
 	client := Client{
 		User:       user,
 		Password:   password,
 		TenantName: tenantName,
-		TenantID:   tenantID,
 		URL:        "https://objectstore-r1nd1001.cnode.jp/v1",
 		Http:       http.DefaultClient,
 	}
