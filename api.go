@@ -64,7 +64,6 @@ func NewClient(user string, password string, tenantName string, tenantID string)
 		Password:   password,
 		TenantName: tenantName,
 		TenantID:   tenantID,
-		AuthURL:    "https://ident-r1nd1001.cnode.jp/v2.0",
 		URL:        "https://objectstore-r1nd1001.cnode.jp/v1",
 		Http:       http.DefaultClient,
 	}
