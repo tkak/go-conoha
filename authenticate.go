@@ -67,11 +67,11 @@ type AccessContainer struct {
 	} `json:"access"`
 }
 
-func getToken(ac AccessContainer) string {
+func getToken(ac *AccessContainer) string {
 	return ac.Access.Token.ID
 }
 
-func getEndpoint(serviceType string, ac AccessContainer) string {
+func getEndpoint(serviceType string, ac *AccessContainer) string {
 	var endpoint string
 	for _, element := range ac.Access.ServiceCatalogs {
 		if element.Type == serviceType {
@@ -83,7 +83,7 @@ func getEndpoint(serviceType string, ac AccessContainer) string {
 	return endpoint
 }
 
-func Authenticate() AccessContainer {
+func Authenticate() *AccessContainer {
 
 	url := "https://ident-r1nd1001.cnode.jp/v2.0/tokens"
 
@@ -126,16 +126,16 @@ func Authenticate() AccessContainer {
 	if err != nil {
 		log.Fatal(err)
 	}
-	b, err := json.MarshalIndent(a, "", "  ")
-	fmt.Println("response Data:", string(b))
+	//b, err := json.MarshalIndent(a, "", "  ")
+	//fmt.Println("response Data:", string(b))
 
-	return a
+	return &a
 }
 
 func main() {
 	var token string
 	var endpoint string
-	var ac AccessContainer
+	var ac *AccessContainer
 
 	ac = Authenticate()
 	token = getToken(ac)
