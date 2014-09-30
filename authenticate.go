@@ -22,12 +22,12 @@ import (
 //   }
 // }
 type AuthContainer struct {
-	Auth *Auth `json:"auth"`
+	Auth Auth `json:"auth"`
 }
 
 type Auth struct {
-	TenantName          string               `json:"tenantName"`
-	PasswordCredentials *PasswordCredentials `json:"passwordCredentials"`
+	TenantName          string              `json:"tenantName"`
+	PasswordCredentials PasswordCredentials `json:"passwordCredentials"`
 }
 
 type PasswordCredentials struct {
@@ -35,14 +35,50 @@ type PasswordCredentials struct {
 	Password string `json:"password"`
 }
 
-func getAuthToken() string {
+type AccessContainer struct {
+	Access struct {
+		ServiceCatalog []struct {
+			Endpoints []struct {
+				AdminURL    string `json:"adminURL"`
+				ID          string `json:"id"`
+				InternalURL string `json:"internalURL"`
+				PublicURL   string `json:"publicURL"`
+				Region      string `json:"region"`
+			} `json:"endpoints"`
+			EndpointsLinks []interface{} `json:"endpoints_links"`
+			Name           string        `json:"name"`
+			Type           string        `json:"type"`
+		} `json:"serviceCatalog"`
+		Token struct {
+			Expires  string `json:"expires"`
+			ID       string `json:"id"`
+			IssuedAt string `json:"issued_at"`
+			Tenant   struct {
+				Description string `json:"description"`
+				Enabled     bool   `json:"enabled"`
+				ID          string `json:"id"`
+				Name        string `json:"name"`
+			} `json:"tenant"`
+		} `json:"token"`
+		User struct {
+			ID   string `json:"id"`
+			Name string `json:"name"`
+		} `json:"user"`
+	} `json:"access"`
+}
+
+func getToken(ac AccessContainer) string {
+	return ac.Access.Token.ID
+}
+
+func Authenticate() AccessContainer {
 
 	url := "https://ident-r1nd1001.cnode.jp/v2.0/tokens"
 
-	ac := &AuthContainer{
-		&Auth{
+	ac := AuthContainer{
+		Auth: Auth{
 			TenantName: os.Getenv("CONOHA_TENANT"),
-			PasswordCredentials: &PasswordCredentials{
+			PasswordCredentials: PasswordCredentials{
 				Username: os.Getenv("CONOHA_USER"),
 				Password: os.Getenv("CONOHA_PASSWORD"),
 			},
@@ -54,7 +90,7 @@ func getAuthToken() string {
 		log.Fatal(err)
 	}
 
-	req, _ := http.NewRequest("POST", url, bytes.NewBufferString(string(json_data)))
+	req, _ := http.NewRequest("POST", url, bytes.NewBuffer(json_data))
 	req.Header.Add("Content-Type", "application/json")
 	req.Header.Add("Accept", "application/json")
 
@@ -63,42 +99,27 @@ func getAuthToken() string {
 	if err != nil {
 		log.Fatal(err)
 	}
-
 	defer resp.Body.Close()
-
-	fmt.Println("response Status:", resp.Status)
-	fmt.Println("response Headers:", resp.Header)
+	//fmt.Println("response Status:", resp.Status)
+	//fmt.Println("response Headers:", resp.Header)
 
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	var i interface{}
-	err = json.Unmarshal(body, &i)
-	if err != nil {
-		log.Fatal(err)
-	}
-	fmt.Println(i.(map[string]interface{}))
+	var a AccessContainer
 
-	m := i.(map[string]interface{})
-	fmt.Println(m["access"])
-
-	mm := m["access"].(map[string]interface{})
-	fmt.Println(mm["token"])
-
-	mmm := mm["token"].(map[string]interface{})
-	fmt.Println(mmm["id"])
-
-	b, err := json.MarshalIndent(i, "", "  ")
+	err = json.Unmarshal(body, &a)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	fmt.Println(string(b))
-	return "s"
+	return a
 }
 
 func main() {
-	getAuthToken()
+	var token string
+	token = getToken(Authenticate())
+	fmt.Println(token)
 }
