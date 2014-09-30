@@ -1,10 +1,8 @@
-//package conoha
-package main
+package conoha
 
 import (
 	"bytes"
 	"encoding/json"
-	"fmt"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -21,7 +19,7 @@ import (
 //     }
 //   }
 // }
-type AuthContainer struct {
+type AuthRequest struct {
 	Auth Auth `json:"auth"`
 }
 
@@ -35,7 +33,7 @@ type PasswordCredentials struct {
 	Password string `json:"password"`
 }
 
-type AccessContainer struct {
+type AuthResponse struct {
 	Access struct {
 		ServiceCatalogs []struct {
 			Endpoints []struct {
@@ -67,11 +65,11 @@ type AccessContainer struct {
 	} `json:"access"`
 }
 
-func getToken(ac *AccessContainer) string {
+func GetToken(ac *AuthResponse) string {
 	return ac.Access.Token.ID
 }
 
-func getEndpoint(serviceType string, ac *AccessContainer) string {
+func GetEndpoint(serviceType string, ac *AuthResponse) string {
 	var endpoint string
 	for _, element := range ac.Access.ServiceCatalogs {
 		if element.Type == serviceType {
@@ -83,11 +81,11 @@ func getEndpoint(serviceType string, ac *AccessContainer) string {
 	return endpoint
 }
 
-func Authenticate() *AccessContainer {
+func Authenticate() *AuthResponse {
 
 	url := "https://ident-r1nd1001.cnode.jp/v2.0/tokens"
 
-	ac := AuthContainer{
+	ac := AuthRequest{
 		Auth: Auth{
 			TenantName: os.Getenv("CONOHA_TENANT"),
 			PasswordCredentials: PasswordCredentials{
@@ -120,7 +118,7 @@ func Authenticate() *AccessContainer {
 		log.Fatal(err)
 	}
 
-	var a AccessContainer
+	var a AuthResponse
 
 	err = json.Unmarshal(body, &a)
 	if err != nil {
@@ -130,17 +128,4 @@ func Authenticate() *AccessContainer {
 	//fmt.Println("response Data:", string(b))
 
 	return &a
-}
-
-func main() {
-	var token string
-	var endpoint string
-	var ac *AccessContainer
-
-	ac = Authenticate()
-	token = getToken(ac)
-	endpoint = getEndpoint("object-store", ac)
-
-	fmt.Println(token)
-	fmt.Println(endpoint)
 }

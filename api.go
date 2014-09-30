@@ -6,24 +6,11 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/url"
-	"os"
 )
 
 type Client struct {
 	// Access Token
 	Token string
-
-	// User Name
-	User string
-
-	// User Password
-	Password string
-
-	// Tenant Name
-	TenantName string
-
-	// Authentication URL
-	AuthURL string
 
 	// URL to the DO API to use
 	URL string
@@ -38,26 +25,12 @@ type DoError struct {
 	Message string `json:"message"`
 }
 
-func NewClient(user string, password string, tenantName string, tenantID string) (*Client, error) {
-	// If it exists, grab the token from the environment
-	if user == "" {
-		user = os.Getenv("CONOHA_USER")
-	}
-
-	if password == "" {
-		password = os.Getenv("CONOHA_PASSWORD")
-	}
-
-	if tenantName == "" {
-		tenantName = os.Getenv("CONOHA_TENANT")
-	}
+func NewClient(token, url string) (*Client, error) {
 
 	client := Client{
-		User:       user,
-		Password:   password,
-		TenantName: tenantName,
-		URL:        "https://objectstore-r1nd1001.cnode.jp/v1",
-		Http:       http.DefaultClient,
+		Token: token,
+		URL:   url,
+		Http:  http.DefaultClient,
 	}
 	return &client, nil
 }
