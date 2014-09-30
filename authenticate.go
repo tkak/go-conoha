@@ -37,7 +37,7 @@ type PasswordCredentials struct {
 
 type AccessContainer struct {
 	Access struct {
-		ServiceCatalog []struct {
+		ServiceCatalogs []struct {
 			Endpoints []struct {
 				AdminURL    string `json:"adminURL"`
 				ID          string `json:"id"`
@@ -69,6 +69,18 @@ type AccessContainer struct {
 
 func getToken(ac AccessContainer) string {
 	return ac.Access.Token.ID
+}
+
+func getEndpoint(serviceType string, ac AccessContainer) string {
+	var endpoint string
+	for _, element := range ac.Access.ServiceCatalogs {
+		if element.Type == serviceType {
+			endpoint = element.Endpoints[0].PublicURL
+			break
+		}
+	}
+
+	return endpoint
 }
 
 func Authenticate() AccessContainer {
@@ -114,12 +126,21 @@ func Authenticate() AccessContainer {
 	if err != nil {
 		log.Fatal(err)
 	}
+	b, err := json.MarshalIndent(a, "", "  ")
+	fmt.Println("response Data:", string(b))
 
 	return a
 }
 
 func main() {
 	var token string
-	token = getToken(Authenticate())
+	var endpoint string
+	var ac AccessContainer
+
+	ac = Authenticate()
+	token = getToken(ac)
+	endpoint = getEndpoint("object-store", ac)
+
 	fmt.Println(token)
+	fmt.Println(endpoint)
 }
