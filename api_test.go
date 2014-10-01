@@ -5,7 +5,7 @@ import (
 	"testing"
 )
 
-func TestAuth(t *testing.T) {
+func TestNewClient(t *testing.T) {
 	var token string
 	var endpoint string
 	var ar *AuthResponse
@@ -14,6 +14,10 @@ func TestAuth(t *testing.T) {
 	token = GetToken(ar)
 	endpoint = GetEndpoint("object-store", ar)
 
-	fmt.Printf("token: %s\n", token)
-	fmt.Printf("endpoint: %s\n", endpoint)
+	c, err := NewClient(token, endpoint)
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	fmt.Printf("client: %+v\n", c)
 }

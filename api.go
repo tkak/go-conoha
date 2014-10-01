@@ -26,7 +26,6 @@ type DoError struct {
 }
 
 func NewClient(token, url string) (*Client, error) {
-
 	client := Client{
 		Token: token,
 		URL:   url,
@@ -36,7 +35,7 @@ func NewClient(token, url string) (*Client, error) {
 }
 
 // Creates a new request with the params
-func (c *Client) NewRequest(params map[string]string, method string, endpoint string) (*http.Request, error) {
+func (c *Client) NewRequest(params map[string]string, headerParams map[string]string, method string, endpoint string) (*http.Request, error) {
 
 	p := url.Values{}
 	u, err := url.Parse(c.URL + endpoint)
@@ -57,6 +56,9 @@ func (c *Client) NewRequest(params map[string]string, method string, endpoint st
 	}
 
 	req.Header.Add("X-Auth-Token", c.Token)
+	for k, v := range headerParams {
+		req.Header.Add(k, v)
+	}
 
 	return req, nil
 }
@@ -100,6 +102,7 @@ func checkResp(resp *http.Response, err error) (*http.Response, error) {
 	if err != nil {
 		return resp, err
 	}
+	fmt.Println(resp.StatusCode)
 
 	switch i := resp.StatusCode; {
 	case i == 200:
