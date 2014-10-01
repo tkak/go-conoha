@@ -13,7 +13,18 @@ func TestCreateContainer(t *testing.T) {
 	var endpoint string
 	var ar *AuthResponse
 
-	ar = Authenticate()
+	ac, err := NewAuthClient("", "", "")
+
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	ar, err = ac.Authenticate()
+
+	if err != nil {
+		fmt.Println(err)
+	}
+
 	token = GetToken(ar)
 	endpoint = GetEndpoint("object-store", ar)
 
@@ -22,16 +33,17 @@ func TestCreateContainer(t *testing.T) {
 		fmt.Println(err)
 	}
 
-	var cc *CreateContainer
-	cc = &CreateContainer{
-		Account:   "2dd5e62509b04ec5ab39d46944a443e8",
-		Container: "test2",
+	var cc *Container
+	cc = &Container{
+		Account:       "2dd5e62509b04ec5ab39d46944a443e8",
+		ContainerName: "test2",
 	}
 
-	out, err := c.CreateContainer(cc)
+	//err = c.CreateContainer(cc)
+	err = c.DeleteContainer(cc)
+
 	if err != nil {
 		fmt.Println(err)
 	}
 
-	fmt.Println(out)
 }

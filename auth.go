@@ -9,6 +9,11 @@ import (
 	"os"
 )
 
+type AuthClient struct {
+	AuthRequest AuthRequest
+	URL         string
+}
+
 // Authentication data sample
 // {
 //   "auth": {
@@ -65,12 +70,44 @@ type AuthResponse struct {
 	} `json:"access"`
 }
 
+func NewAuthClient(tenant, user, password string) (*AuthClient, error) {
+
+	if tenant == "" {
+		tenant = os.Getenv("CONOHA_TENANT")
+	}
+
+	if user == "" {
+		user = os.Getenv("CONOHA_USER")
+	}
+
+	if password == "" {
+		password = os.Getenv("CONOHA_PASSWORD")
+	}
+
+	ac := AuthClient{
+		AuthRequest: AuthRequest{
+			Auth: Auth{
+				TenantName: tenant,
+				PasswordCredentials: PasswordCredentials{
+					Username: user,
+					Password: password,
+				},
+			},
+		},
+		URL: "https://ident-r1nd1001.cnode.jp/v2.0/tokens",
+	}
+
+	return &ac, nil
+}
+
 func GetToken(ac *AuthResponse) string {
 	return ac.Access.Token.ID
 }
 
 func GetEndpoint(serviceType string, ac *AuthResponse) string {
+
 	var endpoint string
+
 	for _, element := range ac.Access.ServiceCatalogs {
 		if element.Type == serviceType {
 			endpoint = element.Endpoints[0].PublicURL
@@ -81,39 +118,36 @@ func GetEndpoint(serviceType string, ac *AuthResponse) string {
 	return endpoint
 }
 
-func Authenticate() *AuthResponse {
+func (ac *AuthClient) Authenticate() (*AuthResponse, error) {
 
-	url := "https://ident-r1nd1001.cnode.jp/v2.0/tokens"
+	json_data, err := json.Marshal(ac.AuthRequest)
 
-	ac := AuthRequest{
-		Auth: Auth{
-			TenantName: os.Getenv("CONOHA_TENANT"),
-			PasswordCredentials: PasswordCredentials{
-				Username: os.Getenv("CONOHA_USER"),
-				Password: os.Getenv("CONOHA_PASSWORD"),
-			},
-		},
-	}
-
-	json_data, err := json.Marshal(ac)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	req, _ := http.NewRequest("POST", url, bytes.NewBuffer(json_data))
+	req, err := http.NewRequest("POST", ac.URL, bytes.NewBuffer(json_data))
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	req.Header.Add("Content-Type", "application/json")
 	req.Header.Add("Accept", "application/json")
 
 	client := &http.Client{}
 	resp, err := client.Do(req)
+
 	if err != nil {
 		log.Fatal(err)
 	}
+
 	defer resp.Body.Close()
 	//fmt.Println("response Status:", resp.Status)
 	//fmt.Println("response Headers:", resp.Header)
 
 	body, err := ioutil.ReadAll(resp.Body)
+
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -121,11 +155,12 @@ func Authenticate() *AuthResponse {
 	var a AuthResponse
 
 	err = json.Unmarshal(body, &a)
+
 	if err != nil {
 		log.Fatal(err)
 	}
 	//b, err := json.MarshalIndent(a, "", "  ")
 	//fmt.Println("response Data:", string(b))
 
-	return &a
+	return &a, err
 }
