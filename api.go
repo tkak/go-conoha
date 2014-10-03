@@ -112,7 +112,7 @@ func NewClient(tenant, user, password string) (*Client, error) {
 
 	client := Client{
 		Token: resp.Access.Token.ID,
-		URL:   getEndpoint("", resp),
+		URL:   getEndpoint("object-store", resp),
 		Http:  http.DefaultClient,
 	}
 
@@ -144,8 +144,6 @@ func authenticate(ar *AuthRequest, url string) (*AuthResponse, error) {
 	}
 
 	defer resp.Body.Close()
-	//fmt.Println("response Status:", resp.Status)
-	//fmt.Println("response Headers:", resp.Header)
 
 	body, err := ioutil.ReadAll(resp.Body)
 
@@ -160,8 +158,6 @@ func authenticate(ar *AuthRequest, url string) (*AuthResponse, error) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	//b, err := json.MarshalIndent(a, "", "  ")
-	//fmt.Println("response Data:", string(b))
 
 	return &a, err
 }
@@ -252,7 +248,6 @@ func checkResp(resp *http.Response, err error) (*http.Response, error) {
 	if err != nil {
 		return resp, err
 	}
-	fmt.Println(resp.StatusCode)
 
 	switch i := resp.StatusCode; {
 	case i == 200:
