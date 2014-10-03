@@ -32,6 +32,26 @@ func (c *Client) CreateContainer(opts *Container) error {
 	return nil
 }
 
+func (c *Client) ReadContainer(opts *Container) error {
+	params := make(map[string]string)
+	headerParams := make(map[string]string)
+
+	params["account"] = opts.Account
+	params["container"] = opts.ContainerName
+
+	req, err := c.NewRequest(params, headerParams, "GET", fmt.Sprintf("/%s", params["container"]))
+	if err != nil {
+		return err
+	}
+
+	_, err = checkResp(c.Http.Do(req))
+	if err != nil {
+		return fmt.Errorf("Error creating container: %s", err)
+	}
+
+	return nil
+}
+
 func (c *Client) DeleteContainer(opts *Container) error {
 	params := make(map[string]string)
 	headerParams := make(map[string]string)
