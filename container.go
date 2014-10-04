@@ -12,16 +12,15 @@ type ContainerResponse struct {
 }
 
 type Container struct {
-	Account       string
-	ContainerName string
+	Name string
 }
 
-func (c *Client) CreateContainer(opts *Container) error {
+func (c *Client) CreateContainer(container *Container) error {
 	params := make(map[string]string)
 	headerParams := make(map[string]string)
 
-	params["account"] = opts.Account
-	params["container"] = opts.ContainerName
+	params["account"] = c.Account
+	params["container"] = container.Name
 
 	headerParams["Accept"] = "application/json"
 	headerParams["Content-Length"] = "0"
@@ -39,12 +38,12 @@ func (c *Client) CreateContainer(opts *Container) error {
 	return nil
 }
 
-func (c *Client) ReadContainer(opts *Container) error {
+func (c *Client) ReadContainer(container *Container) error {
 	params := make(map[string]string)
 	headerParams := make(map[string]string)
 
-	params["account"] = opts.Account
-	params["container"] = opts.ContainerName
+	params["account"] = c.Account
+	params["container"] = container.Name
 
 	headerParams["Accept"] = "application/json"
 
@@ -84,12 +83,12 @@ func (c *Client) ReadContainer(opts *Container) error {
 	return nil
 }
 
-func (c *Client) DeleteContainer(opts *Container) error {
+func (c *Client) DeleteContainer(container *Container) error {
 	params := make(map[string]string)
 	headerParams := make(map[string]string)
 
-	params["account"] = opts.Account
-	params["container"] = opts.ContainerName
+	params["account"] = c.Account
+	params["container"] = container.Name
 
 	req, err := c.NewRequest(params, headerParams, "DELETE", fmt.Sprintf("/%s", params["container"]))
 	if err != nil {
