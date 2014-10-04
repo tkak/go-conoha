@@ -68,9 +68,10 @@ type AuthResponse struct {
 }
 
 type Client struct {
-	Token string
-	URL   string
-	Http  *http.Client
+	Token   string
+	URL     string
+	Account string
+	Http    *http.Client
 }
 
 type DoError struct {
@@ -111,9 +112,10 @@ func NewClient(tenant, user, password string) (*Client, error) {
 	}
 
 	client := Client{
-		Token: resp.Access.Token.ID,
-		URL:   getEndpoint("object-store", resp),
-		Http:  http.DefaultClient,
+		Token:   getToken(resp),
+		URL:     getEndpoint("object-store", resp),
+		Account: getAccount(resp),
+		Http:    http.DefaultClient,
 	}
 
 	return &client, nil
@@ -164,6 +166,10 @@ func authenticate(ar *AuthRequest, url string) (*AuthResponse, error) {
 
 func getToken(ar *AuthResponse) string {
 	return ar.Access.Token.ID
+}
+
+func getAccount(ar *AuthResponse) string {
+	return ar.Access.Token.Tenant.ID
 }
 
 func getEndpoint(serviceType string, ac *AuthResponse) string {
